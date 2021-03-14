@@ -30,7 +30,7 @@
           </div>
         </div>
         <div class="column is-8">
-          <div id="plot"></div>
+          <plotly :data="dataGraph"></plotly>
         </div>
         <div class="column is-2">
           <h3 class="is-size-5">The prior distribution</h3>
@@ -83,9 +83,10 @@
 </template>
 
 <script>
+// mathjs
 import { create, all } from 'mathjs'
 
-// create a mathjs instance with configuration
+// specify mathjs configuration
 const config = {
   epsilon: 1e-12,
   matrix: 'Matrix',
@@ -94,10 +95,15 @@ const config = {
   predictable: false,
   randomSeed: 2021
 }
+
+// create just the functions we need
 const math = create(all, config);
 
-import Plotly from 'plotly.js';
+// Plotly component
+//import Plotly from 'plotly.js';
+import Plotly from '@/components/Plotly.vue'
 
+// some constants
 const minRange = 0;
 const maxRange = 200;
 const defaultMu = 0.3;
@@ -105,133 +111,127 @@ const defaultAlpha = 1;
 const defaultBeta = 1;
 
 export default {
-  name: 'App',
+  name: 'CoinToss',
   components: {
+    Plotly
   },
-data() {
-        return {
-            number: maxRange,
-            range: minRange,
-            randomValues: [],
-            realMu: defaultMu,
-            alpha: defaultAlpha,
-            beta: defaultBeta,
-        }
-    },
-    watch: {
-        number: function(value) {
-            const intValue = parseInt(value);
+  data() {
+    return {
+      number: maxRange,
+      range: minRange,
+      randomValues: [],
+      realMu: defaultMu,
+      alpha: defaultAlpha,
+      beta: defaultBeta,
+    }
+  },
+  computed: {
+    dataGraph() {
+      var data = null;
+      try {
+        // beta density
+        const beta_mu_p_q = '(mu^(p-1))*((1-mu)^(q-1))*combinations(p+q,p)*p*q/(p+q)';
+        // compile the expression once
+        const expr = math.compile(beta_mu_p_q)
 
-            if (isNaN(intValue)) {
-                return
+        const m = math.sum(this.randomValues.slice(0, this.range));
+        const p = parseInt(this.alpha) + m;
+        const q = parseInt(this.beta) + (this.range - m);
+
+        // evaluate the expression repeatedly for different values of x
+        const xValues = math.range(0, 1, 0.01).toArray()
+        const yValues = xValues.map(function (x) {
+          return expr.evaluate({
+            mu: x,
+            p: p,
+            q: q,
+          })
+        });
+
+        // render the plot using plotly
+        const trace = {
+          x: xValues,
+          y: yValues,
+          name: 'posterior density',
+          mode: 'lines',
+          type: 'scatter'
+        }
+
+        const beta_mean = {
+          x: [p/(p+q)],
+          y: [0],
+          name: 'posterior mean',
+          mode: 'markers',
+          type: 'scatter'
+        }
+
+        const real_mean = {
+          x: [this.realMu],
+          y: [0],
+          name: 'real mean',
+          mode: 'markers',
+          type: 'scatter'
+        }
+
+        data = [trace, beta_mean, real_mean];
+      } catch (err) {
+        console.error(err)
+        alert(err)
+      }
+
+      return data
+    }
+  },
+  watch: {
+    number: function(value) {
+      const intValue = parseInt(value);
+
+      if (isNaN(intValue)) {
+        return
             }
 
             if (intValue <= 0) {
                 return
             }
 
-            this.generateRandomValues();
-            this.draw();
-        },
-        range: function() {
-            this.draw();
-        },
-        realMu: function() {
-            this.generateRandomValues();
-            this.draw();
-        },
-        alpha: function() {
-            this.draw();
-        },
-        beta: function() {
-            this.draw();
-        }
+      this.generateRandomValues();
     },
-    methods: {
-        draw() {
-            try {
-                const beta_mu_p_q = '(mu^(p-1))*((1-mu)^(q-1))*combinations(p+q,p)*p*q/(p+q)';
-                // compile the expression once
-                const expr = math.compile(beta_mu_p_q)
-                const m = math.sum(this.randomValues.slice(0, this.range));
-                const p = parseInt(this.alpha) + m;
-                const q = parseInt(this.beta) + (this.range - m);
-
-                // evaluate the expression repeatedly for different values of x
-                const xValues = math.range(0, 1, 0.01).toArray()
-                const yValues = xValues.map(function (x) {
-                    return expr.evaluate({
-                        mu: x,
-                        p: p,
-                        q: q,
-                    })
-                });
-
-                // render the plot using plotly
-                const trace = {
-                    x: xValues,
-                    y: yValues,
-                    name: 'posterior density',
-                    mode: 'lines',
-                    type: 'scatter'
-                }
-
-                const beta_mean = {
-                    x: [p/(p+q)],
-                    y: [0],
-                    name: 'posterior mean',
-                    mode: 'markers',
-                    type: 'scatter'
-                }
-
-                const real_mean = {
-                    x: [this.realMu],
-                    y: [0],
-                    name: 'real mean',
-                    mode: 'markers',
-                    type: 'scatter'
-                }
-
-                const data = [trace, beta_mean, real_mean]
-                Plotly.newPlot('plot', data)
-            }
-            catch (err) {
-                console.error(err)
-                alert(err)
-            }
-        },
-        generateRandomValues() {
-            const randomArray = math.random([this.number]);
-            this.randomValues = randomArray.map(el => (el < this.realMu ? 1 : 0));
-        },
-        newExperiment() {
-            this.generateRandomValues();
-            this.draw();
-        },
-        resetExperiment() {
-            this.range = minRange;
-            this.realMu = defaultMu;
-            this.alpha = defaultAlpha;
-            this.beta = defaultBeta;
-            this.generateRandomValues();
-            this.draw();
-        },
-        incRange(step) {
-            if (this.range + step >= maxRange) {
-                this.range = maxRange;
-            } else if (this.range + step <= minRange) {
-                this.range = minRange;
-            } else {
-                this.range = this.range + step;
-            }
-        },
+    realMu: function() {
+      this.generateRandomValues();
     },
-    created() {
-        this.generateRandomValues();
+  },
+  methods: {
+    generateRandomValues() {
+      const randomArray = math.random([this.number]);
+      this.randomValues = randomArray.map(el => (el < this.realMu ? 1 : 0));
     },
-    mounted() {
-        this.draw();
-    }
+    newExperiment() {
+      this.generateRandomValues();
+      this.draw();
+    },
+    resetExperiment() {
+      this.range = minRange;
+      this.realMu = defaultMu;
+      this.alpha = defaultAlpha;
+      this.beta = defaultBeta;
+      this.generateRandomValues();
+      this.draw();
+    },
+    incRange(step) {
+      if (this.range + step >= maxRange) {
+        this.range = maxRange;
+      } else if (this.range + step <= minRange) {
+        this.range = minRange;
+      } else {
+        this.range = this.range + step;
+      }
+    },
+  },
+  created() {
+    this.generateRandomValues();
+  },
+  mounted() {
+  }
 }
 </script>
 
