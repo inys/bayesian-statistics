@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <div class="container">
-      <h1 class="is-size-1 title">Inference of the real probability of a golf player</h1>
+      <h1 class="is-size-1 title">Inference of the success probability of a golfer</h1>
       <div class="buttons">
         <button class="button is-info"
           @click="newExperiment">New experiment</button>
@@ -16,7 +16,7 @@
         <div class="column is-2">
           <h3 class="is-size-5">The golfer</h3>
           <div class="field">
-            <label class="label">Real mean:</label>
+            <label class="label">Success probability:</label>
             {{ realMu * 100 }} %
             <div class="control">
               <input
@@ -107,7 +107,7 @@ const d3 = require("d3-random");
 
 // some constants
 const minRange = 0;
-const maxRange = 200;
+const maxRange = 50;
 const defaultMu = 0.05;
 const defaultAlpha = 2;
 const defaultBeta = 100;
@@ -204,7 +204,8 @@ export default {
   },
   methods: {
     generateRandomValues() {
-      this.randomValues = Array.from({length: this.number}, d3.randomGeometric(this.realMu))
+      const tris = Array.from({length: this.number}, d3.randomGeometric(this.realMu))
+      this.randomValues = tris.map(el => (el - 1))
     },
     newExperiment() {
       this.generateRandomValues();
