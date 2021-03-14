@@ -1,87 +1,85 @@
 <template>
   <header class="header">
-        <div class="container">
-          <h1 class="is-size-1 title">Inference of the real probability by tossing a coin</h1>
+    <div class="container">
+      <h1 class="is-size-1 title">Inference of the real probability by tossing a coin</h1>
+      <div class="buttons">
+        <button class="button is-info"
+          @click="newExperiment">New experiment</button>
+        <button class="button is-danger"
+          @click="resetExperiment">Reset experiment</button>
+      </div>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container">
+      <div class="columns is-multiline">
+        <div class="column is-2">
+          <h3 class="is-size-5">The coin</h3>
+          <div class="field">
+            <label class="label">Real mean:</label>
+            {{ realMu }}
+            <div class="control">
+              <input
+                v-model="realMu"
+                type="range"
+                min="0.01"
+                max="0.99"
+                step="0.01"
+                class="slider"/>
+            </div>
+          </div>
+        </div>
+        <div class="column is-8">
+          <div id="plot"></div>
+        </div>
+        <div class="column is-2">
+          <h3 class="is-size-5">The prior distribution</h3>
+          <p>Beta distribution with parameters</p>
+          <div class="field">
+            <label class="label">alpha:</label>
+            <div class="control">
+              <input
+                v-model="alpha"
+                class="input"
+                type="text">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">beta:</label>
+            <div class="control">
+              <input
+                v-model="beta"
+                class="input"
+                type="text">
+            </div>
+          </div>
+        </div>
+        <div class="column is-12">
+          <div class="field">
+            <label class="label">Number of samples:</label>
+            {{ range }}
+            <div class="control">
+              <input 
+                v-model="range"
+                type="range"
+                min="0"
+                :max="number"
+                class="slider"
+                id="myRange"/>
+            </div>
+          </div>
           <div class="buttons">
-            <button class="button is-info"
-            @click="newExperiment">New experiment</button>
-            <button class="button is-danger"
-            @click="resetExperiment">Reset experiment</button>
+            <button class="button" @click="incRange(-10)"><i>-10</i></button>
+            <button class="button" @click="incRange(-1)"><i>-1</i></button>
+            <button class="button" @click="incRange(1)"><i>+1</i></button>
+            <button class="button" @click="incRange(10)"><i>+10</i></button>
           </div>
+          <hr>
+          <p>Outcome: {{ randomValues.slice(0,range) }}</p>
         </div>
-      </header>
-      <section class="section">
-        <div class="container">
-          <div class="columns is-multiline">
-            <div class="column is-2">
-              <h3 class="is-size-5">
-                The coin
-              </h3>
-              <div class="field">
-                <label class="label">Real mean:</label>
-                {{ realMu }}
-                <div class="control">
-                    <input
-                    v-model="realMu"
-                    type="range"
-                    min="0.01"
-                    max="0.99"
-                    step="0.01"
-                    class="slider"/>
-                </div>
-              </div>
-            </div>
-            <div class="column is-8">
-              <div id="plot"></div>
-            </div>
-            <div class="column is-2">
-              <h3 class="is-size-5">The prior distribution</h3>
-              <p>Beta distribution with parameters</p>
-              <div class="field">
-                <label class="label">alpha:</label>
-                <div class="control">
-                  <input
-                      v-model="alpha"
-                      class="input"
-                      type="text">
-                </div>
-              </div>
-              <div class="field">
-                <label class="label">beta:</label>
-                <div class="control">
-                  <input
-                      v-model="beta"
-                      class="input"
-                      type="text">
-                </div>
-              </div>
-            </div>
-            <div class="column is-12">
-              <div class="field">
-                <label class="label">Number of samples:</label>
-                {{ range }}
-                <div class="control">
-                  <input 
-                    v-model="range"
-                    type="range"
-                    min="0"
-                    :max="number"
-                    class="slider"
-                    id="myRange"/>
-                </div>
-              </div>
-              <div class="buttons">
-                <button class="button" @click="incRange(-10)"><i>-10</i></button>
-                <button class="button" @click="incRange(-1)"><i>-1</i></button>
-                <button class="button" @click="incRange(1)"><i>+1</i></button>
-                <button class="button" @click="incRange(10)"><i>+10</i></button>
-              </div>
-              <hr>
-              <p>Outcome: {{ randomValues.slice(0,range) }}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script>
