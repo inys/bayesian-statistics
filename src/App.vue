@@ -14,6 +14,9 @@
         <div class="navbar-item">
           <router-link class="navbar-item" to="/cointoss">Coin toss</router-link>
         </div>
+        <div class="navbar-item">
+          <router-link class="navbar-item" to="/cointoss">Golfer</router-link>
+        </div>
       </div>
     </div>
   </nav>
