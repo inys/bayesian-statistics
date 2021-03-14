@@ -17,6 +17,9 @@
         <div class="navbar-item">
           <router-link class="navbar-item" to="/golfer">Golfer</router-link>
         </div>
+        <div class="navbar-item">
+          <router-link class="navbar-item" to="/priorchoice">Prior choice</router-link>
+        </div>
       </div>
     </div>
   </nav>
