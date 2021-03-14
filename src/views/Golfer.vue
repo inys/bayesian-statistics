@@ -14,17 +14,17 @@
     <div class="container">
       <div class="columns is-multiline">
         <div class="column is-2">
-          <h3 class="is-size-5">The coin</h3>
+          <h3 class="is-size-5">The golfer</h3>
           <div class="field">
             <label class="label">Real mean:</label>
-            {{ realMu }}
+            {{ realMu * 100 }} %
             <div class="control">
               <input
                 v-model="realMu"
                 type="range"
                 min="0.01"
-                max="0.99"
-                step="0.01"
+                max="0.1"
+                step="0.001"
                 class="slider"/>
             </div>
           </div>
@@ -103,14 +103,14 @@ const math = create(all, config);
 //import Plotly from 'plotly.js';
 import Plotly from '@/components/Plotly.vue'
 
-import d3 from 'd3-random'
+const d3 = require("d3-random");
 
 // some constants
 const minRange = 0;
 const maxRange = 200;
-const defaultMu = 0.3;
-const defaultAlpha = 1;
-const defaultBeta = 1;
+const defaultMu = 0.05;
+const defaultAlpha = 2;
+const defaultBeta = 100;
 
 export default {
   name: 'Golfer',
@@ -136,12 +136,12 @@ export default {
         // compile the expression once
         const expr = math.compile(beta_mu_p_q)
 
-        const m = math.sum(this.randomValues.slice(0, this.range));
-        const p = parseInt(this.alpha) + m;
-        const q = parseInt(this.beta) + (this.range - m);
+        const subRange = this.randomValues.slice(0, this.range);
+        const p = parseInt(this.alpha) + subRange.length;
+        const q = parseInt(this.beta) + math.sum(subRange);
 
         // evaluate the expression repeatedly for different values of x
-        const xValues = math.range(0, 1, 0.01).toArray()
+        const xValues = math.range(0.0, 0.1, 0.0005).toArray()
         const yValues = xValues.map(function (x) {
           return expr.evaluate({
             mu: x,
@@ -204,7 +204,7 @@ export default {
   },
   methods: {
     generateRandomValues() {
-      this.randomValues = Array.from({length: this.number}, d3.randomBernoulli(this.realMu))
+      this.randomValues = Array.from({length: this.number}, d3.randomGeometric(this.realMu))
     },
     newExperiment() {
       this.generateRandomValues();
