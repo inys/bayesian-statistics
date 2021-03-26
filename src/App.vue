@@ -20,6 +20,9 @@
         <div class="navbar-item">
           <router-link class="navbar-item" to="/priorchoice">Prior choice</router-link>
         </div>
+        <div class="navbar-item">
+          <router-link class="navbar-item" to="/montyhall">Monty Hall Problem</router-link>
+        </div>
       </div>
     </div>
   </nav>
